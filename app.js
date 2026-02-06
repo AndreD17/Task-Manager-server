@@ -43,8 +43,8 @@ app.use(
           "'self'",
           "http://localhost:*",
           "https://*.render.com",
-          "https://task-manager-backend-*.onrender.com",
-          "https://task-manager-frontend-*.onrender.com",
+          "https://task-manager-server-izto.onrender.com/",
+          "https://task-manager-server-izto.onrender.com/",
         ],
         frameSrc: ["'self'"],
         objectSrc: ["'none'"],
@@ -105,7 +105,7 @@ const corsOptions = {
     const allowedOrigins = [
       "http://localhost:3000",
       "http://localhost:5000",
-      "https://task-manager-frontend-8nkw.onrender.com",
+      "https://task-manager-server-izto.onrender.com/",
       "https://task-manager-frontend-*.onrender.com",
     ];
     
@@ -229,7 +229,8 @@ app.use((err, req, res, next) => {
       message: err.message,
       allowedOrigins: [
         "http://localhost:3000",
-        "https://task-manager-frontend-8nkw.onrender.com",
+        "https://task-manager-frontend.onrender.com",
+        "https://task-manager-frontend-v8z3.onrender.com/",
       ],
     });
   }
