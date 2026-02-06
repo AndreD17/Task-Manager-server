@@ -43,8 +43,7 @@ app.use(
           "'self'",
           "http://localhost:*",
           "https://*.render.com",
-          "https://task-manager-server-izto.onrender.com/",
-          "https://task-manager-server-izto.onrender.com/",
+          "https://task-manager-server-izto.onrender.com", // ✅ NO trailing slash
         ],
         frameSrc: ["'self'"],
         objectSrc: ["'none'"],
@@ -64,7 +63,7 @@ app.use((req, res, next) => {
   const path = req.path;
   
   // For API routes, we need CORS and specific headers
-  if (path.startsWith('/api/')) {
+  if (path.startsWith('/api/') || path.startsWith('/auth/')) { // ✅ Added /auth/ routes
     // Add CORS headers for API routes
     res.header("Access-Control-Allow-Credentials", "true");
     res.header(
@@ -105,8 +104,8 @@ const corsOptions = {
     const allowedOrigins = [
       "http://localhost:3000",
       "http://localhost:5000",
-      "https://task-manager-server-izto.onrender.com/",
-      "https://task-manager-frontend-*.onrender.com",
+      "https://task-manager-server-izto.onrender.com", // ✅ NO trailing slash
+      "https://task-manager-frontend-v8z3.onrender.com", // ✅ NO trailing slash
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -120,7 +119,7 @@ const corsOptions = {
       if (isRenderSubdomain) {
         callback(null, true);
       } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        callback(null, false); // ✅ Return false instead of error for CORS
       }
     }
   },
@@ -139,7 +138,7 @@ const corsOptions = {
   maxAge: 86400, // 24 hours
 };
 
-// Apply CORS to all routes but handle OPTIONS preflight
+// Apply CORS to all routes
 app.use(cors(corsOptions));
 
 // Handle preflight requests
@@ -147,7 +146,7 @@ app.options("*", cors(corsOptions));
 
 app.use(compression());
 
-// ✅ Rate limiting
+// ✅ Rate limiting (exclude auth/login from rate limiting)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, 
@@ -158,19 +157,26 @@ const limiter = rateLimit({
     status: 429,
   },
   skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === "/api/health" || req.path === "/";
+    // Skip rate limiting for health checks and auth endpoints
+    return req.path === "/api/health" || 
+           req.path === "/" ||
+           req.path === "/auth/login" || 
+           req.path === "/auth/register";
   },
 });
-app.use("/api/", limiter);
+app.use(limiter); // ✅ Apply to all routes
 
 // ✅ Swagger setup
 setupSwagger(app);
 
-// ✅ API routes
+// ✅ API routes - FIX: Your frontend is calling /auth/login but your routes are at /api/auth
+// Option 1: Keep /api/auth prefix (recommended - more organized)
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/profile", profileRoutes);
+
+// Option 2: Add additional routes without /api prefix (if frontend can't be changed)
+app.use("/auth", authRoutes); // This will make /auth/login work
 
 // ✅ Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -180,6 +186,12 @@ app.get("/api/health", (req, res) => {
     uptime: process.uptime(),
     database: "connected",
     version: "1.0.0",
+    cors: {
+      allowedOrigins: [
+        "http://localhost:3000",
+        "https://task-manager-frontend-v8z3.onrender.com"
+      ]
+    }
   });
 });
 
@@ -191,10 +203,15 @@ app.get("/", (req, res) => {
     documentation: "/api-docs",
     health: "/api/health",
     endpoints: {
-      auth: "/api/auth",
+      auth: {
+        login: "/api/auth/login (or /auth/login)",
+        register: "/api/auth/register",
+        logout: "/api/auth/logout"
+      },
       tasks: "/api/tasks",
       profile: "/api/profile",
     },
+    frontend: "https://task-manager-frontend-v8z3.onrender.com",
     status: "operational",
   });
 });
@@ -205,7 +222,14 @@ app.use("/api/*", (req, res) => {
     error: "API endpoint not found",
     path: req.path,
     method: req.method,
-    availableEndpoints: ["/api/auth", "/api/tasks", "/api/profile", "/api/health"],
+    availableEndpoints: [
+      "/api/auth/login",
+      "/api/auth/register", 
+      "/api/tasks",
+      "/api/profile", 
+      "/api/health"
+    ],
+    note: "If looking for /auth/login, try /api/auth/login or we also support /auth/login"
   });
 });
 
@@ -215,6 +239,7 @@ app.use((req, res) => {
     error: "Route not found",
     path: req.path,
     suggestion: "Check / for available endpoints",
+    frontend: "https://task-manager-frontend-v8z3.onrender.com",
   });
 });
 
@@ -226,12 +251,12 @@ app.use((err, req, res, next) => {
   if (err.message && err.message.includes("CORS")) {
     return res.status(403).json({
       error: "CORS policy violation",
-      message: err.message,
+      message: "Origin not allowed",
       allowedOrigins: [
         "http://localhost:3000",
-        "https://task-manager-frontend.onrender.com",
-        "https://task-manager-frontend-v8z3.onrender.com/",
+        "https://task-manager-frontend-v8z3.onrender.com",
       ],
+      yourOrigin: req.headers.origin || "unknown",
     });
   }
   
@@ -269,14 +294,20 @@ const startServer = async () => {
       logger.info(`🚀 Server running on port ${PORT}`);
       logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
       logger.info(`🌐 Health check: http://localhost:${PORT}/api/health`);
+      logger.info(`🔗 Auth endpoints: http://localhost:${PORT}/api/auth/login`);
+      logger.info(`🌍 CORS enabled for: https://task-manager-frontend-v8z3.onrender.com`);
       
       console.log(`\n=== Task Manager Backend ===`);
       console.log(`🚀 Server running at http://localhost:${PORT}`);
       console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
       console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🔐 Auth endpoints:`);
+      console.log(`   - POST ${PORT}/api/auth/login`);
+      console.log(`   - POST ${PORT}/api/auth/register`);
+      console.log(`   - Also available at ${PORT}/auth/login (no /api prefix)`);
       console.log(`🌍 CORS enabled for:`);
+      console.log(`   - https://task-manager-frontend-v8z3.onrender.com`);
       console.log(`   - http://localhost:3000`);
-      console.log(`   - https://task-manager-frontend-*.onrender.com`);
       console.log(`============================\n`);
     });
 
@@ -306,7 +337,6 @@ const startServer = async () => {
     process.on("unhandledRejection", (reason, promise) => {
       logger.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
       console.error("❌ Unhandled Rejection:", reason);
-      // Don't exit in production, just log
       if (process.env.NODE_ENV === "development") {
         process.exit(1);
       }
@@ -316,7 +346,6 @@ const startServer = async () => {
     process.on("uncaughtException", (error) => {
       logger.error("❌ Uncaught Exception:", error);
       console.error("❌ Uncaught Exception:", error);
-      // Exit in all environments for uncaught exceptions
       process.exit(1);
     });
   } catch (err) {
@@ -324,7 +353,6 @@ const startServer = async () => {
     console.error("❌ Failed to start server:");
     console.error(err.message);
     
-    // Retry logic for database connection
     if (err.message.includes("database") || err.message.includes("authenticate")) {
       console.log("🔄 Retrying database connection in 5 seconds...");
       setTimeout(() => startServer(), 5000);
