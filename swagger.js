@@ -12,7 +12,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:5000", // Change if deployed
+        url: process.env.API_URL,
       },
     ],
     components: {

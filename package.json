@@ -1,11 +1,11 @@
 {
-  "name": "task-manager-backend",
-  "version": "1.0.0",
+  "name": "task-manager-server",
+  "version": "1.0.1",
   "type": "module",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "build": "echo 'No build step required for Node.js'",
     "test": "jest"
   },
