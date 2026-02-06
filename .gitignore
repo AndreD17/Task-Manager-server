@@ -1,0 +1,7 @@
+node_modules/
+.env.env
+.env.production
+node_modules
+.env
+.env.production
+node_modules
