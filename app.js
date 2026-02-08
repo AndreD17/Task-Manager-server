@@ -22,12 +22,12 @@ dotenv.config();
 
 const app = express();
 
-/* -------------------- BASIC MIDDLEWARE -------------------- */
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* -------------------- SECURITY -------------------- */
+
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -36,7 +36,7 @@ app.use(
 
 app.use(compression());
 
-/* -------------------- CORS CONFIG (FIXED) -------------------- */
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://task-manager-frontend-v8z3.onrender.com",
@@ -44,14 +44,13 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow Postman / curl / mobile apps
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    // ❌ DO NOT throw error – let browser handle rejection
+
     return callback(null, false);
   },
   credentials: true,
@@ -63,7 +62,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // ✅ IMPORTANT
 
-/* -------------------- RATE LIMIT -------------------- */
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
@@ -76,15 +75,14 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-/* -------------------- SWAGGER -------------------- */
+
 setupSwagger(app);
 
-/* -------------------- ROUTES -------------------- */
+
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/profile", profileRoutes);
 
-/* -------------------- HEALTH CHECK -------------------- */
 app.get("/api/health", (_, res) => {
   res.json({
     status: "ok",
@@ -92,7 +90,7 @@ app.get("/api/health", (_, res) => {
   });
 });
 
-/* -------------------- ROOT -------------------- */
+
 app.get("/", (_, res) => {
   res.json({
     message: "Task Manager API",
@@ -101,7 +99,7 @@ app.get("/", (_, res) => {
   });
 });
 
-/* -------------------- 404 HANDLERS -------------------- */
+
 app.use("/api/*", (req, res) => {
   res.status(404).json({
     error: "API endpoint not found",
@@ -117,7 +115,7 @@ app.use((req, res) => {
   });
 });
 
-/* -------------------- GLOBAL ERROR HANDLER -------------------- */
+
 app.use((err, req, res, next) => {
   logger.error(err);
 
@@ -133,7 +131,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/* -------------------- SERVER START -------------------- */
+
 const startServer = async () => {
   try {
     await sequelize.authenticate();

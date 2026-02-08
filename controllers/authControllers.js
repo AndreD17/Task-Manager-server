@@ -117,9 +117,10 @@ export const login = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production",
+      secure: isProduction,
+      sameSite:isProduction ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
 
@@ -137,8 +138,3 @@ export const login = async (req, res) => {
   }
 };
 
-export const signout = (req, res) => {
-  // For JWT, signout is handled on the client by deleting the token.
-  // Optionally, you can implement token blacklisting here.
-  res.json({ msg: "User signed out successfully" });
-};  

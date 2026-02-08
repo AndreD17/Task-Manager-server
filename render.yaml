@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: task-manager-backend
+    name: server
     env: node
     buildCommand: npm install
     startCommand: npm start
