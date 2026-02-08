@@ -26,7 +26,7 @@ export const refresh = (req, res) => {
 
     const newAccessToken = createAccessToken({ id: decoded.id });
 
-    res.status(200).json({ token: newAccessToken });
+    res.status(200).json({ accessToken: newAccessToken });
   } catch (err) {
     return res.status(403).json({ msg: "Invalid refresh token" });
   }
@@ -113,19 +113,21 @@ export const login = async (req, res) => {
     const accessToken = createAccessToken({ id: user.id });
     const refreshToken = createRefreshToken({ id: user.id });
 
-    // 🔐 Secure cookie
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 1 * 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
     });
+
 
     logger.info(`User logged in: ${user.id}`);
 
     res.status(200).json({
       status: true,
-      token: accessToken,
+      accessToken,
       user,
       msg: "Login successful",
     });
@@ -134,3 +136,9 @@ export const login = async (req, res) => {
     res.status(500).json({ status: false, msg: "Internal Server Error" });
   }
 };
+
+export const signout = (req, res) => {
+  // For JWT, signout is handled on the client by deleting the token.
+  // Optionally, you can implement token blacklisting here.
+  res.json({ msg: "User signed out successfully" });
+};  

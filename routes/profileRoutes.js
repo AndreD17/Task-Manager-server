@@ -18,7 +18,7 @@ const router = express.Router();
  *     summary: Get user profile
  *     description: Retrieves the profile of the currently authenticated user.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     tags: [Profile]
  *     responses:
  *       200:

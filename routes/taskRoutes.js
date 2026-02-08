@@ -24,7 +24,7 @@ const router = express.Router();
  *       - Tasks # 👈 Fetch all tasks
  *     description: Retrieve all tasks for the logged-in user.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     responses:
  *       200:
  *         description: A list of tasks created by the user.
@@ -60,7 +60,7 @@ router.get("/", verifyAccessToken, getTasks);
  *     tags: [Tasks]
  *     description: Add a new task for the logged-in user.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     requestBody:
  *       required: true
  *       content:
@@ -95,7 +95,7 @@ router.post("/", verifyAccessToken, postTask);
  *     tags:
  *       - Tasks
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -125,7 +125,7 @@ router.patch("/:id/status", verifyAccessToken, patchTaskStatus);
  *     tags: [Tasks]
  *     description: Retrieve a specific task by ID.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -162,7 +162,7 @@ router.get("/:id", verifyAccessToken, getTask);
  *     tags: [Tasks]
  *     description: Update a task for the logged-in user.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -208,7 +208,7 @@ router.put("/:id", verifyAccessToken, putTask);
  *     tags: [Tasks]
  *     description: Remove a task by ID.
  *     security:
- *       - bearerAuth: []
+ *       - Bearer: []
  *     parameters:
  *       - in: path
  *         name: id
