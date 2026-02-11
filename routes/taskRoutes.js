@@ -1,6 +1,6 @@
 import express from "express";
 import { getTasks, getTask, postTask, putTask, deleteTask } from "../controllers/taskControllers.js";
-import { verifyAccessToken } from "../middlewares/index.js";
+import { verifyToken } from "../middlewares/index.js";
 import "../cron/checkDueTasks.js";
 import { patchTaskStatus } from "../controllers/taskControllers.js";
 
@@ -48,7 +48,7 @@ const router = express.Router();
  *                         type: boolean
  *                         example: false
  */
-router.get("/", verifyAccessToken, getTasks);
+router.get("/", verifyToken, getTasks);
 
 
 
@@ -84,7 +84,7 @@ router.get("/", verifyAccessToken, getTasks);
  *       201:
  *         description: Task successfully created.
  */
-router.post("/", verifyAccessToken, postTask);
+router.post("/", verifyToken, postTask);
 
 /**
  * @swagger
@@ -115,7 +115,7 @@ router.post("/", verifyAccessToken, postTask);
  *       200:
  *         description: Task status updated successfully
  */
-router.patch("/:id/status", verifyAccessToken, patchTaskStatus);
+router.patch("/:id/status", verifyToken, patchTaskStatus);
 
 /**
  * @swagger
@@ -150,7 +150,7 @@ router.patch("/:id/status", verifyAccessToken, patchTaskStatus);
  *       404:
  *         description: Task not found.
  */
-router.get("/:id", verifyAccessToken, getTask);
+router.get("/:id", verifyToken, getTask);
 
 
 
@@ -198,7 +198,7 @@ router.get("/:id", verifyAccessToken, getTask);
  *       404:
  *         description: Task not found.
  */
-router.put("/:id", verifyAccessToken, putTask);
+router.put("/:id", verifyToken, putTask);
 
 /**
  * @swagger
@@ -231,7 +231,7 @@ router.put("/:id", verifyAccessToken, putTask);
  */
 
 
-router.delete("/:id", verifyAccessToken, deleteTask);
+router.delete("/:id", verifyToken, deleteTask);
 
 
 export default router;

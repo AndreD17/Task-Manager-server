@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "jest",
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
     "build": "echo 'No build step required for Node.js'",
     "prebuild": "echo 'No prebuild step required for Node.js'"
   },

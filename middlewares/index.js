@@ -1,55 +1,83 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import logger from "../utils/logger.js";
+import { errorHandler } from "./error.js";
+import {
+  createAccessToken,
+  verifyRefreshToken,
+} from "../utils/token.js";
 
-
-const { ACCESS_TOKEN_SECRET } = process.env;
-
-export const verifyAccessToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ status: false, msg: "Authorization token missing" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  let decoded;
+export const verifyToken = async (req, res, next) => {
   try {
-    decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).json({
-        status: false,
-        msg: "Access token expired",
-        code: "TOKEN_EXPIRED",
-      });
+    const accessToken = req.cookies.access_token;
+    const refreshToken = req.cookies.refresh_token;
+
+    // 🚫 No tokens at all
+    if (!accessToken && !refreshToken) {
+      return next(errorHandler(401, "Unauthorized: Please log in"));
     }
 
-    return res.status(401).json({
-      status: false,
-      msg: "Invalid access token",
-    });
-  }
+    // ===============================
+    // 1️⃣ Try verifying access token
+    // ===============================
+    if (accessToken) {
+      try {
+        const decoded = jwt.verify(
+          accessToken,
+          process.env.ACCESS_TOKEN_SECRET
+        );
 
-  try {
-    const user = await User.findByPk(decoded.id);
+        req.user = { id: decoded.id };
+        logger.info("✅ Access token valid");
+        return next();
+      } catch (err) {
+        if (err.name !== "TokenExpiredError") {
+          return next(errorHandler(403, "Invalid access token"));
+        }
 
+        logger.warn("⚠️ Access token expired, attempting refresh");
+      }
+    }
+
+    // ===============================
+    // 2️⃣ Verify refresh token
+    // ===============================
+    if (!refreshToken) {
+      return next(errorHandler(401, "Session expired, please log in again"));
+    }
+
+    let decodedRefresh;
+    try {
+      decodedRefresh = verifyRefreshToken(refreshToken);
+    } catch (err) {
+      return next(errorHandler(403, "Invalid refresh token"));
+    }
+
+    const user = await User.findByPk(decodedRefresh.id);
     if (!user) {
-      return res
-        .status(401)
-        .json({ status: false, msg: "User no longer exists" });
+      return next(errorHandler(404, "User not found"));
     }
 
-    req.user = user;
-    logger.info(`Access token verified for user ${user.id}`);
+    // ===============================
+    // 3️⃣ Issue new access token
+    // ===============================
+    const newAccessToken = createAccessToken({ id: user.id });
+
+    res.cookie("access_token", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite:
+        process.env.NODE_ENV === "production" ? "strict" : "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    req.user = { id: user.id };
+
+    logger.info("🔄 Access token refreshed successfully");
+
     next();
   } catch (err) {
-    logger.error("Token verification error:", err);
-    res.status(500).json({ status: false, msg: "Internal Server Error" });
+    logger.error("❌ Authentication failed:", err.message);
+    return next(errorHandler(403, "Authentication failed"));
   }
 };
-
-

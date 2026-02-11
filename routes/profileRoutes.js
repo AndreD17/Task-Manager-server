@@ -1,6 +1,6 @@
 import express from "express";
 import { getProfile } from "../controllers/profileControllers.js";
-import { verifyAccessToken } from "../middlewares/index.js";
+import { verifyToken } from "../middlewares/index.js";
 
 const router = express.Router();
 
@@ -42,6 +42,6 @@ const router = express.Router();
  *         description: Internal server error.
  */
 
-router.get("/", verifyAccessToken, getProfile);
+router.get("/", verifyToken, getProfile);
 
 export default router;

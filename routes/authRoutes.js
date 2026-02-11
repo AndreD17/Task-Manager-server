@@ -1,6 +1,7 @@
 import express from "express";
 import { body } from "express-validator";
-import { signup, login } from "../controllers/authControllers.js";
+import { signup, login, getMe } from "../controllers/authControllers.js";
+import { verifyToken } from "../middlewares/index.js";
 
 const router = express.Router();
 
@@ -81,5 +82,23 @@ router.post(
   ],
   login
 );
+
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current logged-in user
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns authenticated user information
+ *       401:
+ *         description: Unauthorized - No valid token provided
+ */
+router.get("/me", verifyToken, getMe);
 
 export default router;
