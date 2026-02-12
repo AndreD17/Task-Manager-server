@@ -9,11 +9,11 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   logging: process.env.NODE_ENV === 'development' ? (msg) => logger.info(msg) : false,
   pool: {
-    max: 10,                     // Maximum number of connections in the pool
-    min: 2,                      // Minimum number of connections to maintain
-    acquire: 30000,              // Time (ms) to acquire a connection before timing out
-    idle: 10000,                 // Time (ms) a connection can be idle before release
-    evict: 10000,                // Evict idle connections
+    max: 10,                     
+    min: 2,                     
+    acquire: 30000,             
+    idle: 10000,                 
+    evict: 10000,           
   },
   dialectOptions: {
     ssl: {
@@ -22,18 +22,14 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     },
   },
   retry: {
-    max: 5,                      // Maximum number of retries
-    timeout: 5000,               // Time (ms) to wait before retrying
+    max: 5,                     
+    timeout: 5000,              
   },
   define: {
-    timestamps: true,            // Add createdAt and updatedAt fields
-    underscored: false,          // Use camelCase for field names
+    timestamps: true,            
+    underscored: false,    
   },
 });
 
-// ✅ Test database connection on startup
-sequelize.authenticate()
-  .then(() => logger.info('Database connection successful'))
-  .catch((err) => logger.error('Database connection failed:', err));
 
 export default sequelize;

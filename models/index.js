@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
   config.database,
   config.username,
   config.password,
-  { ...config, dialect: "postgres" } // make sure dialect is a string
+  { ...config, dialect: "postgres" } 
 );
 
 // Dynamically import all models
