@@ -18,19 +18,19 @@ if (hasEmailConfig) {
 
   transporter.verify((error) => {
     if (error) {
-      console.error("❌ EMAIL verify failed — FULL ERROR ↓↓↓");
+      console.error(" EMAIL verify failed — FULL ERROR ↓↓↓");
       console.error(error);
     } else {
-      logger.info("✅ EMAIL server is ready to send emails");
+      logger.info("EMAIL server is ready to send emails");
     }
   });
 } else {
-  logger.warn("⚠️ Email config missing. Emails will not be sent.");
+  logger.warn("Email config missing. Emails will not be sent.");
 }
 
 export const sendDueTaskEmail = async (to, taskDesc, dueDate) => {
   if (!transporter) {
-    logger.error("❌ Email transporter not initialized");
+    logger.error("Email transporter not initialized");
     return;
   }
 
@@ -40,7 +40,7 @@ export const sendDueTaskEmail = async (to, taskDesc, dueDate) => {
     : "Not Set";
 
   if (!to || !/\S+@\S+\.\S+/.test(to)) {
-    logger.warn(`❌ Invalid email address: ${to}`);
+    logger.warn(`Invalid email address: ${to}`);
     return;
   }
 
@@ -60,7 +60,7 @@ export const sendDueTaskEmail = async (to, taskDesc, dueDate) => {
     await transporter.sendMail(mailOptions);
     logger.info(`📧 Email sent for task: "${taskDesc}" to ${to}`);
   } catch (err) {
-    console.error("❌ Error sending due task email — FULL ERROR ↓↓↓");
+    console.error("Error sending due task email — FULL ERROR ↓↓↓");
     console.error(err);
   }
 };

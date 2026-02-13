@@ -6,24 +6,23 @@ import {
 } from "../utils/token.js";
 import { errorHandler } from "../middlewares/error.js";
 
-// Helper: cookie options
+const isProduction = process.env.NODE_ENV === "production";
+
 const accessCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  maxAge: 15 * 60 * 1000, // 15 minutes
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 15 * 60 * 1000,
 };
 
 const refreshCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 3 * 24 * 60 * 60 * 1000,
 };
 
-// =======================
-// SIGNUP
-// =======================
+
 export const signup = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -62,9 +61,7 @@ export const signup = async (req, res, next) => {
   }
 };
 
-// =======================
-// LOGIN
-// =======================
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -96,9 +93,7 @@ export const login = async (req, res, next) => {
   }
 };
 
-// =======================
-// GET CURRENT USER
-// =======================
+
 export const getMe = async (req, res, next) => {
   try {
     if (!req.user?.id) {
@@ -119,12 +114,11 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-// =======================
-// LOGOUT
-// =======================
+/** 
 export const logout = (req, res) => {
   res.clearCookie("access_token");
   res.clearCookie("refresh_token");
 
   res.status(200).json({ message: "Logged out successfully" });
 };
+*/

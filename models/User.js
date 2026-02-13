@@ -34,8 +34,8 @@ const User = sequelize.define("User", {
         defaultValue: DataTypes.NOW, // Equivalent to MongoDB's `Date.now`
     }
 }, {
-    timestamps: true, // Adds `createdAt` & `updatedAt` fields
-    tableName: "users", // Custom table name
+    timestamps: true,
+    tableName: "users", 
 });
 
 export default User;
