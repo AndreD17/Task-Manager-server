@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://task-manager-frontend-v8z3.onrender.com",
+  "https://task-manager-frontend-2wnu.onrender.com/",
 ];
 
 app.use(
