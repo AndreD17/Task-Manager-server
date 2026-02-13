@@ -53,7 +53,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000", // frontend dev
-      "https://task-manager-frontend-8nkw.onrender.com" // frontend prod
+      ""https://task-manager-frontend1-xdkh.onrender.com/"
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
