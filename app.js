@@ -76,6 +76,15 @@ app.get("/api/health", (_, res) => {
   });
 });
 
+
+app.get("/", (req, res) => {
+  res.json({
+    status: "Active route",
+    message: "Task Manager API is running",
+  });
+});
+
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,

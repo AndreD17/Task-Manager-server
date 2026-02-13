@@ -15,10 +15,10 @@ const startServer = async () => {
     logger.info("Database connected");
 
     await sequelize.sync();
-    logger.info(" Models synced");
+    logger.info("Models synced");
 
     app.listen(PORT, () => {
-      logger.info(`Server running on port https://localhost:${PORT}`);
+      logger.info(`Server running on port http://localhost:${PORT}`);
     });
   } catch (err) {
     logger.error(" Server startup failed", err);
@@ -26,6 +26,5 @@ const startServer = async () => {
   }
 };
 
-//app.listen(PORT, () => {logger.info(`Server running on port ${PORT}`); });
 
 startServer();
