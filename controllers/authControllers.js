@@ -8,11 +8,12 @@ import { errorHandler } from "../middlewares/error.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
+
 const accessCookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
-  maxAge: 15 * 60 * 1000,
+  maxAge: 15 * 60 * 1000, 
 };
 
 const refreshCookieOptions = {
@@ -22,21 +23,27 @@ const refreshCookieOptions = {
   maxAge: 3 * 24 * 60 * 60 * 1000,
 };
 
-
 export const signup = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
 
+    
     if (!name || !email || !password) {
       return next(errorHandler(400, "All fields are required"));
     }
 
-    const existingUser = await User.findOne({ where: { email } });
+    email = email.toLowerCase().trim();
+
+    const existingUser = await User.findOne({
+      where: { email },
+      attributes: ["id"],
+    });
+
     if (existingUser) {
       return next(errorHandler(400, "Email already exists"));
     }
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
@@ -44,8 +51,10 @@ export const signup = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    const accessToken = createAccessToken({ id: user.id });
-    const refreshToken = createRefreshToken({ id: user.id });
+    const [accessToken, refreshToken] = await Promise.all([
+      createAccessToken({ id: user.id }),
+      createRefreshToken({ id: user.id }),
+    ]);
 
     res.cookie("access_token", accessToken, accessCookieOptions);
     res.cookie("refresh_token", refreshToken, refreshCookieOptions);
@@ -56,6 +65,7 @@ export const signup = async (req, res, next) => {
       message: "Signup successful",
       user: userData,
     });
+
   } catch (error) {
     next(error);
   }
@@ -64,20 +74,33 @@ export const signup = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    if (!email || !password) {
+      return next(errorHandler(400, "Email and password are required"));
+    }
+
+    email = email.toLowerCase().trim();
+
+    const user = await User.findOne({
+      where: { email },
+      attributes: ["id", "password", "name", "email"],
+    });
+
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
 
-    const isMatch = bcrypt.compareSync(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return next(errorHandler(401, "Invalid email or password"));
     }
 
-    const accessToken = createAccessToken({ id: user.id });
-    const refreshToken = createRefreshToken({ id: user.id });
+    const [accessToken, refreshToken] = await Promise.all([
+      createAccessToken({ id: user.id }),
+      createRefreshToken({ id: user.id }),
+    ]);
 
     res.cookie("access_token", accessToken, accessCookieOptions);
     res.cookie("refresh_token", refreshToken, refreshCookieOptions);
@@ -88,6 +111,7 @@ export const login = async (req, res, next) => {
       message: "Login successful",
       user: userData,
     });
+
   } catch (error) {
     next(error);
   }
@@ -109,16 +133,21 @@ export const getMe = async (req, res, next) => {
     }
 
     res.status(200).json({ user });
+
   } catch (error) {
     next(error);
   }
 };
 
-/** 
+/**
+ 
 export const logout = (req, res) => {
-  res.clearCookie("access_token");
-  res.clearCookie("refresh_token");
+  res.clearCookie("access_token", accessCookieOptions);
+  res.clearCookie("refresh_token", refreshCookieOptions);
 
-  res.status(200).json({ message: "Logged out successfully" });
+  res.status(200).json({
+    message: "Logged out successfully",
+  });
 };
-*/
+
+ */
